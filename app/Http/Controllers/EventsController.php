@@ -8,6 +8,8 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Arr;
 
 class EventsController extends BaseController
 {
@@ -97,7 +99,20 @@ class EventsController extends BaseController
      */
 
     public function getEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 1');
+        $events = DB::select('select * from events');
+        $workShop = DB::select('select * from workshops ');
+        $result = [];
+        foreach($events as $e){
+            $res = $e;
+            $id = $e->id;
+            $res->workshops =array_values( Arr::where($workShop,function($value,$key) use ($id){
+                return $value->event_id == $id;
+            }));
+            $result[] = $res;
+            unset($res);
+        }
+      return $result;
+         
     }
 
 
@@ -176,6 +191,28 @@ class EventsController extends BaseController
      */
 
     public function getFutureEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 2');
+        
+        $workShop = DB::select('select * from workshops where start>now() ');
+        $ids = Arr::pluck(json_decode(json_encode($workShop),1),'event_id');
+        $result = [];
+        if(!empty($ids)){
+            $events = DB::select('select * from events where id in ('.implode(",",$ids).')');
+            foreach($events as $e){
+                $res = $e;
+                $id = $e->id;
+                $res->workshops =array_values( Arr::where($workShop,function($value,$key) use ($id){
+                    return $value->event_id == $id;
+                }));
+                $result[] = $res;
+                unset($res);
+            }
+        }
+        
+      return $result;
+    }
+
+    public function getWarmupEvents(){
+        $events = DB::table('events')->select(['name'])->get();
+        return $events;
     }
 }

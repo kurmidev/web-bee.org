@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 
 use App\Models\MenuItem;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Arr;
+
 
 class MenuController extends BaseController
 {
@@ -95,6 +98,31 @@ class MenuController extends BaseController
      */
 
     public function getMenuItems() {
-        throw new \Exception('implement in coding task 3');
+      //  $menu = DB::select("select * from menu_items");
+        $menu = \DB::table('menu_items')
+          ->get();
+        $menu = json_decode(json_encode($menu),1);
+        $result=[];
+        foreach($menu as $m){
+            if(empty($m['parent_id'])){
+                $result[] = $m;
+            }else{
+                $result =  $this->rearrangeMenu($m,$result);
+            }
+        }
+        return $result;
+    }
+
+    public function rearrangeMenu($menu,&$items){
+            foreach($items as $i=>$item){
+                if($item['id']==$menu['parent_id']){
+                    $items[$i]['children'][] = $menu;
+                    return $items;
+                }else if(!empty($items[$i]['children'])){
+                    $items[$i]['children']= self::rearrangeMenu($menu,$item['children']);
+                }
+            }
+                    
+        return $items;
     }
 }

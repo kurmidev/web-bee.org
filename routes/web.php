@@ -14,12 +14,12 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
 Route::get('/', function () {
     return view('welcome');
 });
 
 
 Route::get('/events', [EventsController::class, 'getEventsWithWorkshops']);
+Route::get('/warmupevents', [EventsController::class, 'getWarmupEvents']);
 Route::get('/futureevents', [EventsController::class, 'getFutureEventsWithWorkshops']);
 Route::get('/menu', [MenuController::class, 'getMenuItems']);
